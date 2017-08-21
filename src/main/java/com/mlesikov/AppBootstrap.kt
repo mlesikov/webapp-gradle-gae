@@ -1,6 +1,10 @@
 package com.mlesikov
 
+import com.google.appengine.api.datastore.DatastoreServiceFactory
+import com.google.appengine.api.datastore.Entity
+import com.google.appengine.api.datastore.KeyFactory
 import com.google.appengine.repackaged.com.google.gson.Gson
+import com.google.common.base.Throwables
 import spark.Filter
 import spark.ResponseTransformer
 import spark.Route
@@ -41,26 +45,59 @@ class AppBootstrap : SparkApplication {
       return@Route message
     }), JsonTransformer())
 
-    put("/messages/:id", DEFAULT_ACCEPT, {request.params("id")})
+    put("/messages/:id", DEFAULT_ACCEPT, { request.params("id") })
 
     post("/messages/:id", DEFAULT_ACCEPT, {
-      val  m:MyMessage = JsonTransformer().from(request.body(), MyMessage::class.java)
+      val m: MyMessage = JsonTransformer().from(request.body(), MyMessage::class.java)
       MessageRepo().store(m)
     })
+
+
+    //GAE tests
+    get("/msg", "application/json", Route({ req, res ->
+
+      try {
+        val dss = DatastoreServiceFactory.getDatastoreService()
+        dss.get(KeyFactory.createKey("Message", 123L))
+        println(" ------------- entity found")
+      } catch (e: Exception) {
+        println(Throwables.getStackTraceAsString(e))
+      }
+
+      return@Route MyMessage("Hello World")
+
+    }), JsonTransformer())
+
+    //GAE tests
+    get("/msg/save", "application/json", Route({ req, res ->
+
+      try {
+        val dss = DatastoreServiceFactory.getDatastoreService()
+        dss.put(Entity("Message", 123L))
+
+      } catch (e: Exception) {
+        println(Throwables.getStackTraceAsString(e))
+      }
+
+      return@Route MyMessage("Hello World")
+
+    }), JsonTransformer())
+
   }
 
 }
 
 
 class MessageRepo {
-  fun store(m: MyMessage){
+  fun store(m: MyMessage) {
   }
 }
 
 
-//  json
 data class MyMessage(val msg: String)
 
+
+//  json
 class JsonTransformer : ResponseTransformer {
 
   private val gson = Gson()
@@ -69,7 +106,7 @@ class JsonTransformer : ResponseTransformer {
     return gson.toJson(model)
   }
 
-  fun  <T> from(json: String?, clazz: Class<T>): T {
+  fun <T> from(json: String?, clazz: Class<T>): T {
     return gson.fromJson<T>(json, clazz)
   }
 }

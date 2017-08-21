@@ -10,8 +10,9 @@ import javax.servlet.DispatcherType
 
 
 /**
- * TinyServerApp is an HTTP server application with start/stop workflow that serves Spark applications.
+ * TinyServerApp is a simple HTTP server application with start/stop workflow that serves Spark applications.
  *
+ * !!! DEVELOPMENT only
  *
  * It's designed for testing purposes and should be used only for that.
  *

@@ -1,4 +1,4 @@
-import com.clouway.telcong.apigateway.e2e.TinySparkServer
+import com.clouway.telcong.apigateway.e2e.TinySparkAppEngineServer
 import org.hamcrest.core.Is.`is`
 import org.junit.After
 import org.junit.Assert
@@ -16,13 +16,12 @@ import java.util.*
  * @author Mihail Lesikov (mlesikov@gmail.com)
  */
 
-
 class RestfulServiceTest {
-  private var server: TinySparkServer? = null
+  private var server: TinySparkAppEngineServer? = null
 
   @Before
   fun init() {
-    server = TinySparkServer(5678, "com.mlesikov.AppBootstrap")
+    server = TinySparkAppEngineServer(5678, "com.mlesikov.AppBootstrap")
     server!!.start()
   }
 
@@ -32,8 +31,19 @@ class RestfulServiceTest {
   }
 
   @Test
-  fun getJson() {
-    val lines = readLines(URL("http://localhost:5678/json"))
+  fun saveAndGetMsg() {
+    val liness = readLines(URL("http://localhost:5678/msg/save"))
+    Assert.assertThat<List<String>>(liness, `is`<List<String>>(Arrays.asList(JsonBuilder.aNewJson().add("msg", "Hello World").build())))
+    
+
+    val lines = readLines(URL("http://localhost:5678/msg"))
+    Assert.assertThat<List<String>>(lines, `is`<List<String>>(Arrays.asList(JsonBuilder.aNewJson().add("msg", "Hello World").build())))
+  }
+
+  @Test
+  fun getMsg() {
+
+    val lines = readLines(URL("http://localhost:5678/msg"))
     Assert.assertThat<List<String>>(lines, `is`<List<String>>(Arrays.asList(JsonBuilder.aNewJson().add("msg", "Hello World").build())))
   }
 
